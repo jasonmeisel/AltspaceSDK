@@ -1,26 +1,153 @@
 /// <reference path="typings/threejs/three.d.ts" />
 /// <reference path="typings/pleasejs/please.d.ts" />
 
-declare var altspace : any;
-
-class Enclosure {
-	innerWidth: number
-	innerHeight: number
-	innerDepth: number
-	pixelsPerMeter: number
-	hasFocus: boolean
-} 
-
-function toDeclaration(obj : any)
-{
-	var out = "class Foo {\n";
-	for (var key in obj)
-		out += "\t" + key + ": " + typeof(obj[key]) + "\n";
-	out += "}";
-	console.log(out);
+declare class Enclosure {
+	innerWidth: number;
+	innerHeight: number;
+	innerDepth: number;
+	pixelsPerMeter: number;
+	hasFocus: boolean;
 }
 
+declare class Altspace {
+	_internal: any;
+	getUser: () => any;
+	getSpace: () => any;
+	addEventListener: (type ?: any, listener ?: any) => any;
+	hasEventListener: (type ?: any, listener ?: any) => any;
+	removeEventListener: (type ?: any, listener ?: any) => any;
+	dispatchEvent: (event ?: any) => any;
+	getThreeJSRenderer: (options ?: any) => any;
+	setHighPerfMode: (enabled ?: any) => any;
+	inClient: boolean;
+	utilities: AltspaceUtilities;
+	getEnclosure: () => any;
+	_listeners: AltspaceListeners;
+	getThreeJSDebugInfo: () => any;
+	getGamepads: () => any;
+	getDocument: () => any;
+	getThreeJSTrackingSkeleton: () => any;
+	instantiateNativeObject: (path ?: any) => any;
+	open: (url ?: any, target ?: any, opts ?: any) => any;
+}
+
+declare class AltspaceListeners {
+	listeneradded: any;
+	listenerremoved: any;
+}
+
+declare class AltspaceUtilities {
+	shims: AltspaceUtilitiesShims;
+	behaviors: AltspaceUtilitiesBehaviors;
+	sync: AltspaceUtilitiesSync;
+	codePen: AltspaceUtilitiesCodePen;
+	Simulation: (t ?: any) => any;
+	multiloader: AltspaceUtilitiesMultiloader;
+}
+
+declare class AltspaceUtilitiesMultiloader {
+	init: (t ?: any) => any;
+	load: (e ?: any, n ?: any) => any;
+	LoadRequest: () => any;
+}
+
+declare class AltspaceUtilitiesCodePen {
+	inTile: string;
+	inVR: boolean;
+	inCodePen: boolean;
+	ensureInVR: () => any;
+	setName: (t ?: any) => any;
+	getPenId: () => any;
+	getAuthorId: () => any;
+	printDebugInfo: () => any;
+}
+
+declare class AltspaceUtilitiesSync {
+	connect: (e ?: any) => any;
+	getInstance: (t ?: any) => any;
+	authenticate: (t ?: any) => any;
+}
+
+declare class AltspaceUtilitiesBehaviors {
+	Object3DSync: (e ?: any) => any;
+	Bob: (t ?: any) => any;
+	ButtonStateStyle: (t ?: any) => any;
+	Drag: (t ?: any) => any;
+	GamepadControls: (t ?: any) => any;
+	HoverColor: (t ?: any) => any;
+	SceneSync: (t ?: any, e ?: any) => any;
+	Spin: (t ?: any) => any;
+	TouchpadRotate: (t ?: any) => any;
+	Layout: (e ?: any) => any;
+	SteamVRInput: () => any;
+	SteamVRTrackedObject: (e ?: any) => any;
+}
+
+declare class AltspaceUtilitiesShims {
+	OBJMTLLoader: () => any;
+	cursor: any;
+} 
+
+declare var altspace : Altspace;
+
+var STRIP_COMMENTS = /((\/\/.*$)|(\/\*[\s\S]*?\*\/))/mg;
+var ARGUMENT_NAMES = /([^\s,]+)/g;
+function getParamNames(func : Function) {
+	var fnStr = func.toString().replace(STRIP_COMMENTS, '');
+	var result = fnStr.slice(fnStr.indexOf('(')+1, fnStr.indexOf(')')).match(ARGUMENT_NAMES);
+	if (result === null)
+		result = [];
+	return result.map(p => p);
+}
+
+function toType(prefix : string, name : string, obj : any, otherTypes : any[])
+{
+	if (obj instanceof Function)
+	{
+		var params = getParamNames(obj as Function);
+		var paramList = params.map(p => `${p} ?: any`).join(", ");
+		return `(${paramList}) => any`;
+	}
+
+	if (obj instanceof Object)
+	{
+		name = name.replace("_", "");
+		name = name[0].toUpperCase() + name.substr(1);
+		otherTypes.push({
+			name : name,
+			obj : obj
+		});
+		return prefix + name;
+	}
+
+	return typeof(obj);
+}
+
+function toDeclaration(name : string, obj : any, depth : number = 0)
+{
+	if (depth > 2)
+		return;
+
+	var otherTypes = [];
+
+	var out = "declare class " + name + " {\n";
+	for (var key in obj)
+		out += "\t" + key + ": " + toType(name, key, obj[key], otherTypes) + ";\n";
+	out += "}";
+
+	console.log(out);
+	while (otherTypes.length > 0)
+	{
+		var type = otherTypes.pop();
+		type.name[0] = type.name[0].toUpperCase();
+		toDeclaration(name + type.name, type.obj, depth + 1);
+	}
+} 
+
 var sim = altspace.utilities.Simulation();
+// toDeclaration("Simulation", sim);
+toDeclaration("Altspace", altspace);
+
 sim.camera.position.z = 5;
 var config = { authorId: 'AltspaceVR', appId: 'TwoRooms' };
 var sceneSync;
@@ -77,8 +204,6 @@ function ready(firstInstance) {
 	});
 
 	altspace.getEnclosure().then(function(e : Enclosure) {
-		// console.log(e);
-		toDeclaration(e);
 	});
 }
 

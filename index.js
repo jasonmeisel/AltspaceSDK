@@ -1,18 +1,50 @@
 /// <reference path="typings/threejs/three.d.ts" />
 /// <reference path="typings/pleasejs/please.d.ts" />
-var Enclosure = (function () {
-    function Enclosure() {
+var STRIP_COMMENTS = /((\/\/.*$)|(\/\*[\s\S]*?\*\/))/mg;
+var ARGUMENT_NAMES = /([^\s,]+)/g;
+function getParamNames(func) {
+    var fnStr = func.toString().replace(STRIP_COMMENTS, '');
+    var result = fnStr.slice(fnStr.indexOf('(') + 1, fnStr.indexOf(')')).match(ARGUMENT_NAMES);
+    if (result === null)
+        result = [];
+    return result.map(function (p) { return p; });
+}
+function toType(prefix, name, obj, otherTypes) {
+    if (obj instanceof Function) {
+        var params = getParamNames(obj);
+        var paramList = params.map(function (p) { return (p + " ?: any"); }).join(", ");
+        return "(" + paramList + ") => any";
     }
-    return Enclosure;
-}());
-function toDeclaration(obj) {
-    var out = "class Foo {\n";
+    if (obj instanceof Object) {
+        name = name.replace("_", "");
+        name = name[0].toUpperCase() + name.substr(1);
+        otherTypes.push({
+            name: name,
+            obj: obj
+        });
+        return prefix + name;
+    }
+    return typeof (obj);
+}
+function toDeclaration(name, obj, depth) {
+    if (depth === void 0) { depth = 0; }
+    if (depth > 2)
+        return;
+    var otherTypes = [];
+    var out = "declare class " + name + " {\n";
     for (var key in obj)
-        out += "\t" + key + ": " + typeof (obj[key]) + "\n";
+        out += "\t" + key + ": " + toType(name, key, obj[key], otherTypes) + ";\n";
     out += "}";
     console.log(out);
+    while (otherTypes.length > 0) {
+        var type = otherTypes.pop();
+        type.name[0] = type.name[0].toUpperCase();
+        toDeclaration(name + type.name, type.obj, depth + 1);
+    }
 }
 var sim = altspace.utilities.Simulation();
+// toDeclaration("Simulation", sim);
+toDeclaration("Altspace", altspace);
 sim.camera.position.z = 5;
 var config = { authorId: 'AltspaceVR', appId: 'TwoRooms' };
 var sceneSync;
@@ -60,8 +92,6 @@ function ready(firstInstance) {
         obj.position.z = 100;
     });
     altspace.getEnclosure().then(function (e) {
-        // console.log(e);
-        toDeclaration(e);
     });
 }
 function ChangeColor() {
