@@ -63,7 +63,7 @@ function toDeclaration(name : string, obj : any, depth : number = 0)
 
 let sim = altspace.utilities.Simulation();
 
-sim.camera.position.z = 5;
+// sim.camera.position.z = 5;
 let config = { authorId: 'AltspaceVR', appId: 'TwoRooms' };
 let sceneSync;
 altspace.utilities.sync.connect(config).then(function(connection : SyncConnection) {
@@ -114,11 +114,23 @@ function ready(firstInstance) {
 		// 	altspace.utilities.behaviors.Spin({speed: 0.0005})
 		// );
 		sim.scene.add(obj);
-		obj.position.y = 250;
-		obj.position.z = 100;
+		obj.position.y = 0;
+		obj.position.z = 0;
 	});
 
-	altspace.getEnclosure().then(function(e : Enclosure) {
+	altspace.getThreeJSTrackingSkeleton().then(skeleton => loadBomb(skeleton.trackingJoints.CenterHead0.position));
+}
+
+function loadBomb(pos : THREE.Vector3)
+{
+	let loader = new THREE.JSONLoader();
+	loader.load("./res/bomb.json", (geo, mats) => {
+		let material = new THREE.MeshLambertMaterial( { map: THREE.ImageUtils.loadTexture("./res/bomb.png") } );
+		let obj = new THREE.Mesh(geo, material);
+		sim.scene.add(obj);
+		obj.position.copy(pos);
+		obj.position.x += 10;
+		obj.scale.set(10, 10, 10);
 	});
 }
 

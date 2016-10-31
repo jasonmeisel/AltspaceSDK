@@ -33,12 +33,17 @@ declare class AltspaceListeners {
 	listenerremoved: any;
 }
 
+declare class Scene extends THREE.Scene {
+	updateAllBehaviors: () => void;
+	addBehavior: (beh: any) => void;
+}
+
 declare class AltspaceUtilities {
 	shims: AltspaceUtilitiesShims;
 	behaviors: AltspaceUtilitiesBehaviors;
 	sync: AltspaceUtilitiesSync;
 	codePen: AltspaceUtilitiesCodePen;
-	Simulation: (t ?: any) => any;
+	Simulation: (t ?: any) => { scene: Scene };
 	multiloader: AltspaceUtilitiesMultiloader;
 }
 
