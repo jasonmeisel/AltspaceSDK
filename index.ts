@@ -3,6 +3,23 @@
 
 declare var altspace : any;
 
+class Enclosure {
+	innerWidth: number
+	innerHeight: number
+	innerDepth: number
+	pixelsPerMeter: number
+	hasFocus: boolean
+} 
+
+function toDeclaration(obj : any)
+{
+	var out = "class Foo {\n";
+	for (var key in obj)
+		out += "\t" + key + ": " + typeof(obj[key]) + "\n";
+	out += "}";
+	console.log(out);
+}
+
 var sim = altspace.utilities.Simulation();
 sim.camera.position.z = 5;
 var config = { authorId: 'AltspaceVR', appId: 'TwoRooms' };
@@ -36,8 +53,32 @@ function ready(firstInstance) {
 		sceneSync.instantiate('Cube');
 	}
 
-	altspace.getEnclosure().then(function(e) {
-		
+	var fontSrc = "./Roboto_Regular.js";
+	var fontLoader = new THREE.FontLoader();
+	fontLoader.load(fontSrc, (font) => {
+		var geo = new THREE.TextGeometry("Two Rooms...", {
+			bevelEnabled: true,
+			bevelSize: 1,
+			bevelThickness: 1,
+			curveSegments: 12,
+			font: <THREE.Font><any>font,
+			height: 2,
+			size: 50
+		});
+		var material = new THREE.MeshBasicMaterial({color:'#ffffff'});
+		var obj = new THREE.Mesh(geo, material);
+		// (<any>obj).addBehaviors(
+		// 	altspace.utilities.behaviors.Object3DSync(),
+		// 	altspace.utilities.behaviors.Spin({speed: 0.0005})
+		// );
+		sim.scene.add(obj);
+		obj.position.y = 250;
+		obj.position.z = 100;
+	});
+
+	altspace.getEnclosure().then(function(e : Enclosure) {
+		// console.log(e);
+		toDeclaration(e);
 	});
 }
 
