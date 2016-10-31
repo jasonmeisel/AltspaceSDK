@@ -23,7 +23,7 @@ declare class Altspace {
 	getThreeJSDebugInfo: () => any;
 	getGamepads: () => any;
 	getDocument: () => any;
-	getThreeJSTrackingSkeleton: () => any;
+	getThreeJSTrackingSkeleton: () => PromiseLike<TrackingSkeleton>;
 	instantiateNativeObject: (path ?: any) => any;
 	open: (url ?: any, target ?: any, opts ?: any) => any;
 }
@@ -108,4 +108,107 @@ declare class SyncConnectionSpace {
 
 declare class SyncConnectionApp {
 	path: string;
+}
+
+declare class TrackingSkeleton {
+	uuid: string;
+	name: string;
+	type: string;
+	parent: any;
+	children: TrackingJoint[];
+	up: THREE.Vector3;
+	position: THREE.Vector3;
+	rotation: Rotation;
+	quaternion: Quaternion;
+	scale: THREE.Vector3;
+	rotationAutoUpdate: boolean;
+	matrix: Matrix;
+	matrixWorld: Matrix;
+	matrixAutoUpdate: boolean;
+	matrixWorldNeedsUpdate: boolean;
+	layers: Layers;
+	visible: boolean;
+	castShadow: boolean;
+	receiveShadow: boolean;
+	frustumCulled: boolean;
+	renderOrder: number;
+	userData: any;
+	trackingJoints: TrackingSkeletonTrackingJoints;
+}
+
+declare class TrackingSkeletonTrackingJoints {
+	LeftEye0: TrackingJoint;
+	RightEye0: TrackingJoint;
+	CenterHead0: TrackingJoint;
+	CenterNeck0: TrackingJoint;
+	CenterSpine0: TrackingJoint;
+	CenterSpine1: TrackingJoint;
+	CenterSpine2: TrackingJoint;
+	CenterHips0: TrackingJoint;
+	CenterEye0: TrackingJoint;
+}
+
+declare class Layers {
+	mask: number;
+}
+
+declare class Matrix {
+	elements: number[];
+}
+
+declare class Quaternion {
+	_x: number;
+	_y: number;
+	_z: number;
+	_w: number;
+	onChangeCallback: () => any;
+}
+
+declare class Rotation {
+	_x: number;
+	_y: number;
+	_z: number;
+	_order: string;
+	onChangeCallback: () => any;
+}
+
+declare class TrackingJoint {
+	uuid: string;
+	name: string;
+	type: string;
+	parent: TrackingJoint;
+	children: TrackingJoint[];
+	up: TrackingJoint;
+	position: THREE.Vector3;
+	rotation: Rotation;
+	quaternion: Quaternion;
+	scale: THREE.Vector3;
+	rotationAutoUpdate: boolean;
+	matrix: Matrix;
+	matrixWorld: Matrix;
+	matrixAutoUpdate: boolean;
+	matrixWorldNeedsUpdate: boolean;
+	layers: Layers;
+	visible: boolean;
+	castShadow: boolean;
+	receiveShadow: boolean;
+	frustumCulled: boolean;
+	renderOrder: number;
+	userData: any;
+	confidence: number;
+	location: string;
+}
+
+declare class Object3D extends THREE.Object3D {
+	addBehavior: () => any;
+	addBehaviors: () => any;
+	getBehaviorByType: (t ?: any) => any;
+	getMorphTargetIndexByName: (a ?: any) => any;
+	removeAllBehaviors: () => any;
+	removeBehavior: (t ?: any) => any;
+	setDrawMode: (a ?: any) => any;
+	updateBehaviors: (t ?: any, e ?: any) => any;
+	updateMorphTargets: () => any;
+	geometry: THREE.Geometry;
+	material: THREE.Material;
 }

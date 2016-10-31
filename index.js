@@ -1,5 +1,7 @@
 /// <reference path="typings/threejs/three.d.ts" />
 /// <reference path="typings/pleasejs/please.d.ts" />
+/// <reference path="typings/jquery/jquery.d.ts" />
+/// <reference path="typings/underscore/underscore.d.ts" />
 /// <reference path="typings/altspace.d.ts" />
 var STRIP_COMMENTS = /((\/\/.*$)|(\/\*[\s\S]*?\*\/))/mg;
 var ARGUMENT_NAMES = /([^\s,]+)/g;
@@ -33,13 +35,14 @@ function toDeclaration(name, obj, depth) {
         return;
     var otherTypes = [];
     var out = "declare class " + name + " {\n";
-    for (var _i = 0, _a = Object.keys(obj); _i < _a.length; _i++) {
+    for (var _i = 0, _a = Object.keys(obj).concat(_.functions(obj)); _i < _a.length; _i++) {
         var key = _a[_i];
         out += "\t" + key + ": " + toType(name, key, obj[key], otherTypes) + ";\n";
     }
     out += "}";
     // console.log(obj);
     console.log(out);
+    otherTypes = $.unique(otherTypes);
     while (otherTypes.length > 0) {
         var type = otherTypes.pop();
         type.name[0] = type.name[0].toUpperCase();
@@ -63,7 +66,7 @@ function createCube() {
     var geometry = new THREE.BoxGeometry(1, 1, 1);
     var material = new THREE.MeshBasicMaterial({ color: '#ffffff', map: texture });
     var cube = new THREE.Mesh(geometry, material);
-    cube.addBehaviors(altspace.utilities.behaviors.Object3DSync(), altspace.utilities.behaviors.Spin({ speed: 0.0005 }), ChangeColor());
+    cube.addBehaviors(altspace.utilities.behaviors.Object3DSync(), altspace.utilities.behaviors.Spin({ speed: 0.0005 }), followPlayerBehaviour());
     sim.scene.add(cube);
     return cube;
 }
@@ -96,10 +99,11 @@ function ready(firstInstance) {
     altspace.getEnclosure().then(function (e) {
     });
 }
-function ChangeColor() {
+function followPlayerBehaviour() {
     var object3d;
     var lastColor;
     var colorRef;
+    var m_skeleton;
     function awake(o) {
         object3d = o;
         var sync = object3d.getBehaviorByType('Object3DSync'); //TODO: better way of doing this
@@ -120,10 +124,13 @@ function ChangeColor() {
                 // scale cube so it's 1 meter in Altspace
                 object3d.scale.multiplyScalar(e.pixelsPerMeter);
             });
+            altspace.getThreeJSTrackingSkeleton().then(function (skeleton) { return m_skeleton = skeleton; });
         }
     }
     function update(deltaTime) {
-        /* no updating needed, color changes in Firebase 'value' callback above */
+        if (m_skeleton) {
+            object3d.position.x = m_skeleton.trackingJoints.CenterHead0.position.x;
+        }
     }
     return { awake: awake, update: update };
 }

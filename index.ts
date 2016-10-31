@@ -1,5 +1,7 @@
 /// <reference path="typings/threejs/three.d.ts" />
 /// <reference path="typings/pleasejs/please.d.ts" />
+/// <reference path="typings/jquery/jquery.d.ts" />
+/// <reference path="typings/underscore/underscore.d.ts" />
 /// <reference path="typings/altspace.d.ts" />
 
 let STRIP_COMMENTS = /((\/\/.*$)|(\/\*[\s\S]*?\*\/))/mg;
@@ -43,13 +45,14 @@ function toDeclaration(name : string, obj : any, depth : number = 0)
 	let otherTypes = [];
 
 	let out = "declare class " + name + " {\n";
-	for (let key of Object.keys(obj))
+	for (let key of Object.keys(obj).concat(_.functions(obj)))
 		out += "\t" + key + ": " + toType(name, key, obj[key], otherTypes) + ";\n";
 	out += "}";
 
 	// console.log(obj);
 	console.log(out);
-
+	otherTypes = $.unique(otherTypes);
+	
 	while (otherTypes.length > 0)
 	{
 		let type = otherTypes.pop();
@@ -80,7 +83,7 @@ function createCube() {
 	(<any>cube).addBehaviors(
 		altspace.utilities.behaviors.Object3DSync(),
 		altspace.utilities.behaviors.Spin({speed: 0.0005}),
-		ChangeColor()
+		followPlayerBehaviour()
 	);
 
 	sim.scene.add(cube);
@@ -119,13 +122,15 @@ function ready(firstInstance) {
 	});
 }
 
-function ChangeColor() {//define a custom behavior
-
-	let object3d;
+function followPlayerBehaviour()
+{
+	let object3d : Object3D;
 	let lastColor;
 	let colorRef;
 
-	function awake(o) {
+	let m_skeleton : TrackingSkeleton;
+
+	function awake(o : Object3D) {
 		object3d = o;
 		let sync = object3d.getBehaviorByType('Object3DSync');//TODO: better way of doing this
 		colorRef = sync.dataRef.child('color');
@@ -133,7 +138,7 @@ function ChangeColor() {//define a custom behavior
 		colorRef.on('value', function (snapshot) {
 			let value = snapshot.val();
 			if (!value) return; //we are first to create the cube, no color set yet
-			object3d.material.color = new THREE.Color(value);
+			(<THREE.MeshBasicMaterial>object3d.material).color = new THREE.Color(value);
 			object3d.material.needsUpdate = true;//currently required in Altspace
 		});
 
@@ -147,12 +152,16 @@ function ChangeColor() {//define a custom behavior
 				// scale cube so it's 1 meter in Altspace
 				object3d.scale.multiplyScalar(e.pixelsPerMeter);
 			});
-		}
 
+			altspace.getThreeJSTrackingSkeleton().then(skeleton => m_skeleton = skeleton);
+		}
 	}
 
 	function update(deltaTime) {
-		/* no updating needed, color changes in Firebase 'value' callback above */
+		if (m_skeleton)
+		{
+			object3d.position.x = m_skeleton.trackingJoints.CenterHead0.position.x;
+		}
 	}
 
 	return { awake: awake, update: update };
