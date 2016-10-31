@@ -77,12 +77,12 @@ altspace.utilities.sync.connect(config).then(function(connection : SyncConnectio
 function createCube() {
 	let url = 'models/cube/altspace-logo.jpg';
 	let texture = new THREE.TextureLoader().load(url);
-	let geometry = new THREE.BoxGeometry(1, 1, 1);
+	let geometry = new THREE.BoxGeometry(0.1, 0.1, 0.1);
 	let material = new THREE.MeshBasicMaterial({color:'#ffffff', map: texture});
 	let cube = new THREE.Mesh(geometry, material);
 	(<any>cube).addBehaviors(
-		altspace.utilities.behaviors.Object3DSync(),
-		altspace.utilities.behaviors.Spin({speed: 0.0005}),
+		altspace.utilities.behaviors.Object3DSync({ position : true }),
+		altspace.utilities.behaviors.Spin({speed: 0.0001}),
 		followPlayerBehaviour()
 	);
 
@@ -129,6 +129,7 @@ function followPlayerBehaviour()
 	let colorRef;
 
 	let m_skeleton : TrackingSkeleton;
+	let m_enclosure : Enclosure;
 
 	function awake(o : Object3D) {
 		object3d = o;
@@ -151,6 +152,7 @@ function followPlayerBehaviour()
 			altspace.getEnclosure().then(function(e) {
 				// scale cube so it's 1 meter in Altspace
 				object3d.scale.multiplyScalar(e.pixelsPerMeter);
+				m_enclosure = e;
 			});
 
 			altspace.getThreeJSTrackingSkeleton().then(skeleton => m_skeleton = skeleton);
@@ -160,7 +162,8 @@ function followPlayerBehaviour()
 	function update(deltaTime) {
 		if (m_skeleton)
 		{
-			object3d.position.x = m_skeleton.trackingJoints.CenterHead0.position.x;
+			object3d.position.copy(m_skeleton.trackingJoints.CenterHead0.position);
+			object3d.position.x += 5;
 		}
 	}
 

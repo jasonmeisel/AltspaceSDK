@@ -63,10 +63,10 @@ altspace.utilities.sync.connect(config).then(function (connection) {
 function createCube() {
     var url = 'models/cube/altspace-logo.jpg';
     var texture = new THREE.TextureLoader().load(url);
-    var geometry = new THREE.BoxGeometry(1, 1, 1);
+    var geometry = new THREE.BoxGeometry(0.1, 0.1, 0.1);
     var material = new THREE.MeshBasicMaterial({ color: '#ffffff', map: texture });
     var cube = new THREE.Mesh(geometry, material);
-    cube.addBehaviors(altspace.utilities.behaviors.Object3DSync(), altspace.utilities.behaviors.Spin({ speed: 0.0005 }), followPlayerBehaviour());
+    cube.addBehaviors(altspace.utilities.behaviors.Object3DSync({ position: true }), altspace.utilities.behaviors.Spin({ speed: 0.0001 }), followPlayerBehaviour());
     sim.scene.add(cube);
     return cube;
 }
@@ -104,6 +104,7 @@ function followPlayerBehaviour() {
     var lastColor;
     var colorRef;
     var m_skeleton;
+    var m_enclosure;
     function awake(o) {
         object3d = o;
         var sync = object3d.getBehaviorByType('Object3DSync'); //TODO: better way of doing this
@@ -123,13 +124,15 @@ function followPlayerBehaviour() {
             altspace.getEnclosure().then(function (e) {
                 // scale cube so it's 1 meter in Altspace
                 object3d.scale.multiplyScalar(e.pixelsPerMeter);
+                m_enclosure = e;
             });
             altspace.getThreeJSTrackingSkeleton().then(function (skeleton) { return m_skeleton = skeleton; });
         }
     }
     function update(deltaTime) {
         if (m_skeleton) {
-            object3d.position.x = m_skeleton.trackingJoints.CenterHead0.position.x;
+            object3d.position.copy(m_skeleton.trackingJoints.CenterHead0.position);
+            object3d.position.x += 5;
         }
     }
     return { awake: awake, update: update };

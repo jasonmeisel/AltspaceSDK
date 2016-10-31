@@ -66,7 +66,13 @@ declare class AltspaceUtilitiesSync {
 }
 
 declare class AltspaceUtilitiesBehaviors {
-	Object3DSync: (e ?: any) => any;
+	Object3DSync: (config ?: {
+		position ?: boolean;
+		rotation ?: boolean;
+		scale ?: boolean;
+		auto ?: boolean;
+		world ?: boolean;
+	}) => any;
 	Bob: (t ?: any) => any;
 	ButtonStateStyle: (t ?: any) => any;
 	Drag: (t ?: any) => any;
