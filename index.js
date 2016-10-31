@@ -1,3 +1,5 @@
+/// <reference path="typings/threejs/three.d.ts" />
+/// <reference path="typings/pleasejs/please.d.ts" />
 var sim = altspace.utilities.Simulation();
 sim.camera.position.z = 5;
 var config = { authorId: 'AltspaceVR', appId: 'TwoRooms' };

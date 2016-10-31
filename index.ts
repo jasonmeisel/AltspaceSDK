@@ -1,3 +1,6 @@
+/// <reference path="typings/threejs/three.d.ts" />
+/// <reference path="typings/pleasejs/please.d.ts" />
+
 declare var altspace : any;
 
 var sim = altspace.utilities.Simulation();
@@ -18,7 +21,7 @@ function createCube() {
 	var geometry = new THREE.BoxGeometry(1, 1, 1);
 	var material = new THREE.MeshBasicMaterial({color:'#ffffff', map: texture});
 	var cube = new THREE.Mesh(geometry, material);
-	cube.addBehaviors(
+	(<any>cube).addBehaviors(
 		altspace.utilities.behaviors.Object3DSync(),
 		altspace.utilities.behaviors.Spin({speed: 0.0005}),
 		ChangeColor()
