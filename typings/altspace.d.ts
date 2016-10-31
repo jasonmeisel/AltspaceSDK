@@ -86,3 +86,26 @@ declare class AltspaceUtilitiesShims {
 } 
 
 declare var altspace : Altspace;
+
+declare class SyncConnection {
+	app: SyncConnectionApp;
+	space: SyncConnectionSpace;
+	user: SyncConnectionUser;
+	instance: SyncConnectionInstance;
+}
+
+declare class SyncConnectionInstance {
+	path: string;
+}
+
+declare class SyncConnectionUser {
+	path: string;
+}
+
+declare class SyncConnectionSpace {
+	path: string;
+}
+
+declare class SyncConnectionApp {
+	path: string;
+}

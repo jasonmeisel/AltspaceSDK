@@ -2,11 +2,11 @@
 /// <reference path="typings/pleasejs/please.d.ts" />
 /// <reference path="typings/altspace.d.ts" />
 
-var STRIP_COMMENTS = /((\/\/.*$)|(\/\*[\s\S]*?\*\/))/mg;
-var ARGUMENT_NAMES = /([^\s,]+)/g;
+let STRIP_COMMENTS = /((\/\/.*$)|(\/\*[\s\S]*?\*\/))/mg;
+let ARGUMENT_NAMES = /([^\s,]+)/g;
 function getParamNames(func : Function) {
-	var fnStr = func.toString().replace(STRIP_COMMENTS, '');
-	var result = fnStr.slice(fnStr.indexOf('(')+1, fnStr.indexOf(')')).match(ARGUMENT_NAMES);
+	let fnStr = func.toString().replace(STRIP_COMMENTS, '');
+	let result = fnStr.slice(fnStr.indexOf('(')+1, fnStr.indexOf(')')).match(ARGUMENT_NAMES);
 	if (result === null)
 		result = [];
 	return result.map(p => p);
@@ -16,8 +16,8 @@ function toType(prefix : string, name : string, obj : any, otherTypes : any[])
 {
 	if (obj instanceof Function)
 	{
-		var params = getParamNames(obj as Function);
-		var paramList = params.map(p => `${p} ?: any`).join(", ");
+		let params = getParamNames(obj as Function);
+		let paramList = params.map(p => `${p} ?: any`).join(", ");
 		return `(${paramList}) => any`;
 	}
 
@@ -40,30 +40,30 @@ function toDeclaration(name : string, obj : any, depth : number = 0)
 	if (depth > 2)
 		return;
 
-	var otherTypes = [];
+	let otherTypes = [];
 
-	var out = "declare class " + name + " {\n";
-	for (var key in obj)
+	let out = "declare class " + name + " {\n";
+	for (let key of Object.keys(obj))
 		out += "\t" + key + ": " + toType(name, key, obj[key], otherTypes) + ";\n";
 	out += "}";
 
+	// console.log(obj);
 	console.log(out);
+
 	while (otherTypes.length > 0)
 	{
-		var type = otherTypes.pop();
+		let type = otherTypes.pop();
 		type.name[0] = type.name[0].toUpperCase();
 		toDeclaration(name + type.name, type.obj, depth + 1);
 	}
 } 
 
-var sim = altspace.utilities.Simulation();
-// toDeclaration("Simulation", sim);
-toDeclaration("Altspace", altspace);
+let sim = altspace.utilities.Simulation();
 
 sim.camera.position.z = 5;
-var config = { authorId: 'AltspaceVR', appId: 'TwoRooms' };
-var sceneSync;
-altspace.utilities.sync.connect(config).then(function(connection) {
+let config = { authorId: 'AltspaceVR', appId: 'TwoRooms' };
+let sceneSync;
+altspace.utilities.sync.connect(config).then(function(connection : SyncConnection) {
 	sceneSync = altspace.utilities.behaviors.SceneSync(connection.instance, {
 		instantiators: {'Cube': createCube },
 		ready: ready
@@ -72,11 +72,11 @@ altspace.utilities.sync.connect(config).then(function(connection) {
 });
 
 function createCube() {
-	var url = 'models/cube/altspace-logo.jpg';
-	var texture = new THREE.TextureLoader().load(url);
-	var geometry = new THREE.BoxGeometry(1, 1, 1);
-	var material = new THREE.MeshBasicMaterial({color:'#ffffff', map: texture});
-	var cube = new THREE.Mesh(geometry, material);
+	let url = 'models/cube/altspace-logo.jpg';
+	let texture = new THREE.TextureLoader().load(url);
+	let geometry = new THREE.BoxGeometry(1, 1, 1);
+	let material = new THREE.MeshBasicMaterial({color:'#ffffff', map: texture});
+	let cube = new THREE.Mesh(geometry, material);
 	(<any>cube).addBehaviors(
 		altspace.utilities.behaviors.Object3DSync(),
 		altspace.utilities.behaviors.Spin({speed: 0.0005}),
@@ -92,10 +92,10 @@ function ready(firstInstance) {
 		sceneSync.instantiate('Cube');
 	}
 
-	var fontSrc = "./Roboto_Regular.js";
-	var fontLoader = new THREE.FontLoader();
+	let fontSrc = "./Roboto_Regular.js";
+	let fontLoader = new THREE.FontLoader();
 	fontLoader.load(fontSrc, (font) => {
-		var geo = new THREE.TextGeometry("Two Rooms...", {
+		let geo = new THREE.TextGeometry("Two Rooms...", {
 			bevelEnabled: true,
 			bevelSize: 1,
 			bevelThickness: 1,
@@ -104,8 +104,8 @@ function ready(firstInstance) {
 			height: 2,
 			size: 50
 		});
-		var material = new THREE.MeshBasicMaterial({color:'#ffffff'});
-		var obj = new THREE.Mesh(geo, material);
+		let material = new THREE.MeshBasicMaterial({color:'#ffffff'});
+		let obj = new THREE.Mesh(geo, material);
 		// (<any>obj).addBehaviors(
 		// 	altspace.utilities.behaviors.Object3DSync(),
 		// 	altspace.utilities.behaviors.Spin({speed: 0.0005})
@@ -121,24 +121,24 @@ function ready(firstInstance) {
 
 function ChangeColor() {//define a custom behavior
 
-	var object3d;
-	var lastColor;
-	var colorRef;
+	let object3d;
+	let lastColor;
+	let colorRef;
 
 	function awake(o) {
 		object3d = o;
-		var sync = object3d.getBehaviorByType('Object3DSync');//TODO: better way of doing this
+		let sync = object3d.getBehaviorByType('Object3DSync');//TODO: better way of doing this
 		colorRef = sync.dataRef.child('color');
 
 		colorRef.on('value', function (snapshot) {
-			var value = snapshot.val();
+			let value = snapshot.val();
 			if (!value) return; //we are first to create the cube, no color set yet
 			object3d.material.color = new THREE.Color(value);
 			object3d.material.needsUpdate = true;//currently required in Altspace
 		});
 
 		object3d.addEventListener('cursordown', function() {
-			var color = Please.make_color()[0];//random color
+			let color = Please.make_color()[0];//random color
 			colorRef.set(color);
 		});
 

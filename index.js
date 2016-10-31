@@ -33,9 +33,12 @@ function toDeclaration(name, obj, depth) {
         return;
     var otherTypes = [];
     var out = "declare class " + name + " {\n";
-    for (var key in obj)
+    for (var _i = 0, _a = Object.keys(obj); _i < _a.length; _i++) {
+        var key = _a[_i];
         out += "\t" + key + ": " + toType(name, key, obj[key], otherTypes) + ";\n";
+    }
     out += "}";
+    // console.log(obj);
     console.log(out);
     while (otherTypes.length > 0) {
         var type = otherTypes.pop();
@@ -44,8 +47,6 @@ function toDeclaration(name, obj, depth) {
     }
 }
 var sim = altspace.utilities.Simulation();
-// toDeclaration("Simulation", sim);
-toDeclaration("Altspace", altspace);
 sim.camera.position.z = 5;
 var config = { authorId: 'AltspaceVR', appId: 'TwoRooms' };
 var sceneSync;
