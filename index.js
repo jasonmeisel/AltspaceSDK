@@ -1,5 +1,6 @@
 /// <reference path="typings/threejs/three.d.ts" />
 /// <reference path="typings/pleasejs/please.d.ts" />
+/// <reference path="typings/altspace.d.ts" />
 var STRIP_COMMENTS = /((\/\/.*$)|(\/\*[\s\S]*?\*\/))/mg;
 var ARGUMENT_NAMES = /([^\s,]+)/g;
 function getParamNames(func) {
