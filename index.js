@@ -49,11 +49,12 @@ function toDeclaration(name, obj, depth) {
         toDeclaration(name + type.name, type.obj, depth + 1);
     }
 }
-var sim = altspace.utilities.Simulation();
 // sim.camera.position.z = 5;
-var config = { authorId: 'AltspaceVR', appId: 'TwoRooms' };
+var config = { authorId: 'whatisjason', appId: 'TwoRooms' };
 var sceneSync;
+var sim;
 altspace.utilities.sync.connect(config).then(function (connection) {
+    sim = altspace.utilities.Simulation();
     sceneSync = altspace.utilities.behaviors.SceneSync(connection.instance, {
         instantiators: { 'Cube': createCube },
         ready: ready
@@ -61,7 +62,7 @@ altspace.utilities.sync.connect(config).then(function (connection) {
     sim.scene.addBehavior(sceneSync);
 });
 function createCube() {
-    var url = 'models/cube/altspace-logo.jpg';
+    var url = './examples/models/cube/altspace-logo.jpg';
     var texture = new THREE.TextureLoader().load(url);
     var geometry = new THREE.BoxGeometry(0.1, 0.1, 0.1);
     var material = new THREE.MeshBasicMaterial({ color: '#ffffff', map: texture });
@@ -129,12 +130,12 @@ var FollowPlayerBehaviour = (function () {
             altspace.getThreeJSTrackingSkeleton().then(function (skeleton) { return _this.skeleton = skeleton; });
         }
     };
-    FollowPlayerBehaviour.prototype.update = function (deltaTime) {
+    FollowPlayerBehaviour.prototype.update = function (dt) {
         if (this.skeleton) {
             var target = this.skeleton.trackingJoints.CenterHead0.position.clone();
             var toTarget = target.clone().sub(this.object3d.position);
             if (toTarget.length() > 5) {
-                toTarget.clampLength(0, deltaTime * 0.01);
+                toTarget.clampLength(0, dt * 0.01);
                 this.object3d.position.add(toTarget);
             }
         }

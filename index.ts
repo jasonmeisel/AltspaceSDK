@@ -59,14 +59,16 @@ function toDeclaration(name : string, obj : any, depth : number = 0)
 		type.name[0] = type.name[0].toUpperCase();
 		toDeclaration(name + type.name, type.obj, depth + 1);
 	}
-} 
-
-let sim = altspace.utilities.Simulation();
+}
 
 // sim.camera.position.z = 5;
-let config = { authorId: 'AltspaceVR', appId: 'TwoRooms' };
+let config = { authorId: 'whatisjason', appId: 'TwoRooms' };
 let sceneSync : SceneSync;
+
+let sim : Simulation;
+
 altspace.utilities.sync.connect(config).then(function(connection : SyncConnection) {
+	sim = altspace.utilities.Simulation();
 	sceneSync = altspace.utilities.behaviors.SceneSync(connection.instance, {
 		instantiators: {'Cube': createCube },
 		ready: ready
@@ -75,7 +77,7 @@ altspace.utilities.sync.connect(config).then(function(connection : SyncConnectio
 });
 
 function createCube() {
-	let url = 'models/cube/altspace-logo.jpg';
+	let url = './examples/models/cube/altspace-logo.jpg';
 	let texture = new THREE.TextureLoader().load(url);
 	let geometry = new THREE.BoxGeometry(0.1, 0.1, 0.1);
 	let material = new THREE.MeshBasicMaterial({color:'#ffffff', map: texture});
@@ -138,7 +140,7 @@ function loadBomb(pos : THREE.Vector3)
 	});
 }
 
-class FollowPlayerBehaviour
+class FollowPlayerBehaviour implements Behavior
 {
 	object3d : Object3D;
 	lastColor : any;
@@ -150,7 +152,7 @@ class FollowPlayerBehaviour
 	awake(o : Object3D)
 	{
 		this.object3d = o;
-		let sync : Object3DSync = this.object3d.getBehaviorByType("Object3DSync");
+		let sync = <Object3DSync> this.object3d.getBehaviorByType("Object3DSync");
 
 		if (altspace && altspace.inClient)
 		{
@@ -165,7 +167,7 @@ class FollowPlayerBehaviour
 		}
 	}
 
-	update(deltaTime)
+	update(dt : number)
 	{
 		if (this.skeleton)
 		{
@@ -174,7 +176,7 @@ class FollowPlayerBehaviour
 
 			if (toTarget.length() > 5)
 			{
-				toTarget.clampLength(0, deltaTime * 0.01);
+				toTarget.clampLength(0, dt * 0.01);
 				this.object3d.position.add(toTarget);
 			}
 		}

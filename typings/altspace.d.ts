@@ -43,8 +43,14 @@ declare class AltspaceUtilities {
 	behaviors: AltspaceUtilitiesBehaviors;
 	sync: AltspaceUtilitiesSync;
 	codePen: AltspaceUtilitiesCodePen;
-	Simulation: (t ?: any) => { scene: Scene };
+	Simulation: (t ?: any) => Simulation;
 	multiloader: AltspaceUtilitiesMultiloader;
+}
+
+declare class Simulation {
+	scene: Scene;
+	camera : THREE.Camera;
+	renderer : THREE.WebGLRenderer;
 }
 
 declare class AltspaceUtilitiesMultiloader {
@@ -83,7 +89,7 @@ declare class AltspaceUtilitiesBehaviors {
 	Drag: (t ?: any) => any;
 	GamepadControls: (t ?: any) => any;
 	HoverColor: (t ?: any) => any;
-	SceneSync: (t ?: any, e ?: any) => any;
+	SceneSync: (t ?: any, e ?: any) => SceneSync;
 	Spin: (t ?: any) => any;
 	TouchpadRotate: (t ?: any) => any;
 	Layout: (e ?: any) => any;
@@ -226,8 +232,8 @@ declare class Object3D extends THREE.Object3D {
 
 declare class SceneSync {
 	awake: (r ?: any, o ?: any) => any;
-	instantiate: (t ?: any, e ?: any, n ?: any) => any;
-	destroy: (t ?: any) => any;
+	instantiate: (syncType : string, initData ?: Object, destroyOnDisconnect ?: boolean) => any;
+	destroy: (object3d : Object) => any;
 	type: string;
 }
 
