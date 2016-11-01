@@ -66,7 +66,11 @@ function createCube() {
     var geometry = new THREE.BoxGeometry(0.1, 0.1, 0.1);
     var material = new THREE.MeshBasicMaterial({ color: '#ffffff', map: texture });
     var cube = new THREE.Mesh(geometry, material);
-    cube.addBehaviors(altspace.utilities.behaviors.Object3DSync({ position: true }), altspace.utilities.behaviors.Spin({ speed: 0.0001 }), followPlayerBehaviour());
+    cube.addBehaviors(altspace.utilities.behaviors.Object3DSync({
+        position: true,
+        scale: true,
+        rotation: true
+    }), altspace.utilities.behaviors.Spin({ speed: 0.0001 }), followPlayerBehaviour());
     sim.scene.add(cube);
     return cube;
 }
@@ -117,7 +121,7 @@ function followPlayerBehaviour() {
     var m_enclosure;
     function awake(o) {
         object3d = o;
-        var sync = object3d.getBehaviorByType('Object3DSync'); //TODO: better way of doing this
+        var sync = object3d.getBehaviorByType("Object3DSync");
         colorRef = sync.dataRef.child('color');
         colorRef.on('value', function (snapshot) {
             var value = snapshot.val();
@@ -141,8 +145,12 @@ function followPlayerBehaviour() {
     }
     function update(deltaTime) {
         if (m_skeleton) {
-            object3d.position.copy(m_skeleton.trackingJoints.CenterHead0.position);
-            object3d.position.x += 5;
+            var target = m_skeleton.trackingJoints.CenterHead0.position.clone();
+            var toTarget = target.clone().sub(object3d.position);
+            if (toTarget.length() > 5) {
+                toTarget.clampLength(0, deltaTime * 0.01);
+                object3d.position.add(toTarget);
+            }
         }
     }
     return { awake: awake, update: update };

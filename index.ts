@@ -65,7 +65,7 @@ let sim = altspace.utilities.Simulation();
 
 // sim.camera.position.z = 5;
 let config = { authorId: 'AltspaceVR', appId: 'TwoRooms' };
-let sceneSync;
+let sceneSync : SceneSync;
 altspace.utilities.sync.connect(config).then(function(connection : SyncConnection) {
 	sceneSync = altspace.utilities.behaviors.SceneSync(connection.instance, {
 		instantiators: {'Cube': createCube },
@@ -81,7 +81,11 @@ function createCube() {
 	let material = new THREE.MeshBasicMaterial({color:'#ffffff', map: texture});
 	let cube = new THREE.Mesh(geometry, material);
 	(<any>cube).addBehaviors(
-		altspace.utilities.behaviors.Object3DSync({ position : true }),
+		altspace.utilities.behaviors.Object3DSync({
+			position : true,
+			scale : true,
+			rotation : true
+		}),
 		altspace.utilities.behaviors.Spin({speed: 0.0001}),
 		followPlayerBehaviour()
 	);
@@ -145,7 +149,8 @@ function followPlayerBehaviour()
 
 	function awake(o : Object3D) {
 		object3d = o;
-		let sync = object3d.getBehaviorByType('Object3DSync');//TODO: better way of doing this
+		let sync : Object3DSync = object3d.getBehaviorByType("Object3DSync");
+
 		colorRef = sync.dataRef.child('color');
 
 		colorRef.on('value', function (snapshot) {
@@ -174,8 +179,14 @@ function followPlayerBehaviour()
 	function update(deltaTime) {
 		if (m_skeleton)
 		{
-			object3d.position.copy(m_skeleton.trackingJoints.CenterHead0.position);
-			object3d.position.x += 5;
+			let target = m_skeleton.trackingJoints.CenterHead0.position.clone();
+
+			let toTarget = target.clone().sub(object3d.position);
+			if (toTarget.length() > 5)
+			{
+				toTarget.clampLength(0, deltaTime * 0.01);
+				object3d.position.add(toTarget);
+			}
 		}
 	}
 

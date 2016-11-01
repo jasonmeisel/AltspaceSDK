@@ -223,3 +223,20 @@ declare class Object3D extends THREE.Object3D {
 	geometry: THREE.Geometry;
 	material: THREE.Material;
 }
+
+declare class SceneSync {
+	awake: (r ?: any, o ?: any) => any;
+	instantiate: (t ?: any, e ?: any, n ?: any) => any;
+	destroy: (t ?: any) => any;
+	type: string;
+}
+
+declare class Object3DSync {
+	awake: (t ?: any, e ?: any) => any;
+	update: (t ?: any) => any;
+	type: string;
+	link: (t ?: any, e ?: any) => any;
+	autoSend: () => any;
+	takeOwnership: () => any;
+	dataRef: any;
+}
