@@ -8,7 +8,7 @@ declare class Enclosure {
 
 declare class Altspace {
 	_internal: any;
-	getUser: () => any;
+	getUser: () => PromiseLike<AltspaceUser>;
 	getSpace: () => any;
 	addEventListener: (type ?: any, listener ?: any) => any;
 	hasEventListener: (type ?: any, listener ?: any) => any;
@@ -217,8 +217,8 @@ declare class TrackingJoint {
 }
 
 declare class Object3D extends THREE.Object3D {
-	addBehavior: () => any;
-	addBehaviors: (...behaviours: Behavior[]) => any;
+	addBehavior: (behavior : Behavior) => any;
+	addBehaviors: (...behaviors: Behavior[]) => any;
 	getBehaviorByType: (t ?: any) => any;
 	getMorphTargetIndexByName: (a ?: any) => any;
 	removeAllBehaviors: () => any;
@@ -250,4 +250,11 @@ declare class Object3DSync {
 declare interface Behavior {
 	awake ?: (obj : Object3D) => void;
 	update ?: (dt : number) => void;
+}
+
+declare class AltspaceUser {
+	userId: string;
+	isLocal: boolean;
+	isModerator: boolean;
+	displayName: string;
 }

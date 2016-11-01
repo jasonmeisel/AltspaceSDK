@@ -76,7 +76,7 @@ altspace.utilities.sync.connect(config).then(function(connection : SyncConnectio
 	sim.scene.addBehavior(sceneSync);
 });
 
-function createCube() {
+function createCube(args) {
 	let url = './examples/models/cube/altspace-logo.jpg';
 	let texture = new THREE.TextureLoader().load(url);
 	let geometry = new THREE.BoxGeometry(0.1, 0.1, 0.1);
@@ -88,18 +88,26 @@ function createCube() {
 			scale : true,
 			rotation : true
 		}),
-		altspace.utilities.behaviors.Spin({speed: 0.0001}),
-		new FollowPlayerBehaviour()
+		altspace.utilities.behaviors.Spin({speed: 0.0001})
 	);
+
+	altspace.getUser().then(user => {
+		if (user.userId == args.user)
+		{
+			cube.addBehavior(new FollowPlayerBehaviour());
+		}
+	});
+
+	cube.position.set(0,0,0);
 
 	sim.scene.add(cube);
 	return cube;
 }
 
 function ready(firstInstance) {
-	if (firstInstance) {
-		sceneSync.instantiate('Cube');
-	}
+	console.log(`ready! ${firstInstance}`);
+
+	altspace.getUser().then(user => sceneSync.instantiate('Cube', { user: user.userId }));
 
 	let fontSrc = "./Roboto_Regular.js";
 	let fontLoader = new THREE.FontLoader();
@@ -176,7 +184,7 @@ class FollowPlayerBehaviour implements Behavior
 
 			if (toTarget.length() > 5)
 			{
-				toTarget.clampLength(0, dt * 0.01);
+				toTarget.clampLength(0, dt * 0.1);
 				this.object3d.position.add(toTarget);
 			}
 		}

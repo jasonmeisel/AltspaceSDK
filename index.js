@@ -61,7 +61,7 @@ altspace.utilities.sync.connect(config).then(function (connection) {
     });
     sim.scene.addBehavior(sceneSync);
 });
-function createCube() {
+function createCube(args) {
     var url = './examples/models/cube/altspace-logo.jpg';
     var texture = new THREE.TextureLoader().load(url);
     var geometry = new THREE.BoxGeometry(0.1, 0.1, 0.1);
@@ -71,14 +71,19 @@ function createCube() {
         position: true,
         scale: true,
         rotation: true
-    }), altspace.utilities.behaviors.Spin({ speed: 0.0001 }), new FollowPlayerBehaviour());
+    }), altspace.utilities.behaviors.Spin({ speed: 0.0001 }));
+    altspace.getUser().then(function (user) {
+        if (user.userId == args.user) {
+            cube.addBehavior(new FollowPlayerBehaviour());
+        }
+    });
+    cube.position.set(0, 0, 0);
     sim.scene.add(cube);
     return cube;
 }
 function ready(firstInstance) {
-    if (firstInstance) {
-        sceneSync.instantiate('Cube');
-    }
+    console.log("ready! " + firstInstance);
+    altspace.getUser().then(function (user) { return sceneSync.instantiate('Cube', { user: user.userId }); });
     var fontSrc = "./Roboto_Regular.js";
     var fontLoader = new THREE.FontLoader();
     fontLoader.load(fontSrc, function (font) {
@@ -135,7 +140,7 @@ var FollowPlayerBehaviour = (function () {
             var target = this.skeleton.trackingJoints.CenterHead0.position.clone();
             var toTarget = target.clone().sub(this.object3d.position);
             if (toTarget.length() > 5) {
-                toTarget.clampLength(0, dt * 0.01);
+                toTarget.clampLength(0, dt * 0.1);
                 this.object3d.position.add(toTarget);
             }
         }
