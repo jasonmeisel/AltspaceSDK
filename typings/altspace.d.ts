@@ -18,7 +18,7 @@ declare class Altspace {
 	setHighPerfMode: (enabled ?: any) => any;
 	inClient: boolean;
 	utilities: AltspaceUtilities;
-	getEnclosure: () => any;
+	getEnclosure: () => PromiseLike<Enclosure>;
 	_listeners: AltspaceListeners;
 	getThreeJSDebugInfo: () => any;
 	getGamepads: () => any;
@@ -212,7 +212,7 @@ declare class TrackingJoint {
 
 declare class Object3D extends THREE.Object3D {
 	addBehavior: () => any;
-	addBehaviors: () => any;
+	addBehaviors: (...behaviours: Behavior[]) => any;
 	getBehaviorByType: (t ?: any) => any;
 	getMorphTargetIndexByName: (a ?: any) => any;
 	removeAllBehaviors: () => any;
@@ -239,4 +239,9 @@ declare class Object3DSync {
 	autoSend: () => any;
 	takeOwnership: () => any;
 	dataRef: any;
+}
+
+declare interface Behavior {
+	awake ?: (obj : Object3D) => void;
+	update ?: (dt : number) => void;
 }

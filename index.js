@@ -70,7 +70,7 @@ function createCube() {
         position: true,
         scale: true,
         rotation: true
-    }), altspace.utilities.behaviors.Spin({ speed: 0.0001 }), followPlayerBehaviour());
+    }), altspace.utilities.behaviors.Spin({ speed: 0.0001 }), new FollowPlayerBehaviour());
     sim.scene.add(cube);
     return cube;
 }
@@ -113,47 +113,32 @@ function loadBomb(pos) {
         obj.scale.set(10, 10, 10);
     });
 }
-function followPlayerBehaviour() {
-    var object3d;
-    var lastColor;
-    var colorRef;
-    var m_skeleton;
-    var m_enclosure;
-    function awake(o) {
-        object3d = o;
-        var sync = object3d.getBehaviorByType("Object3DSync");
-        colorRef = sync.dataRef.child('color');
-        colorRef.on('value', function (snapshot) {
-            var value = snapshot.val();
-            if (!value)
-                return; //we are first to create the cube, no color set yet
-            object3d.material.color = new THREE.Color(value);
-            object3d.material.needsUpdate = true; //currently required in Altspace
-        });
-        object3d.addEventListener('cursordown', function () {
-            var color = Please.make_color()[0]; //random color
-            colorRef.set(color);
-        });
+var FollowPlayerBehaviour = (function () {
+    function FollowPlayerBehaviour() {
+    }
+    FollowPlayerBehaviour.prototype.awake = function (o) {
+        var _this = this;
+        this.object3d = o;
+        var sync = this.object3d.getBehaviorByType("Object3DSync");
         if (altspace && altspace.inClient) {
             altspace.getEnclosure().then(function (e) {
                 // scale cube so it's 1 meter in Altspace
-                object3d.scale.multiplyScalar(e.pixelsPerMeter);
-                m_enclosure = e;
+                _this.object3d.scale.multiplyScalar(e.pixelsPerMeter);
+                _this.enclosure = e;
             });
-            altspace.getThreeJSTrackingSkeleton().then(function (skeleton) { return m_skeleton = skeleton; });
+            altspace.getThreeJSTrackingSkeleton().then(function (skeleton) { return _this.skeleton = skeleton; });
         }
-    }
-    function update(deltaTime) {
-        if (m_skeleton) {
-            var target = m_skeleton.trackingJoints.CenterHead0.position.clone();
-            var toTarget = target.clone().sub(object3d.position);
+    };
+    FollowPlayerBehaviour.prototype.update = function (deltaTime) {
+        if (this.skeleton) {
+            var target = this.skeleton.trackingJoints.CenterHead0.position.clone();
+            var toTarget = target.clone().sub(this.object3d.position);
             if (toTarget.length() > 5) {
                 toTarget.clampLength(0, deltaTime * 0.01);
-                object3d.position.add(toTarget);
+                this.object3d.position.add(toTarget);
             }
         }
-    }
-    return { awake: awake, update: update };
-}
-;
+    };
+    return FollowPlayerBehaviour;
+}());
 //# sourceMappingURL=index.js.map

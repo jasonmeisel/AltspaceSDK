@@ -79,15 +79,15 @@ function createCube() {
 	let texture = new THREE.TextureLoader().load(url);
 	let geometry = new THREE.BoxGeometry(0.1, 0.1, 0.1);
 	let material = new THREE.MeshBasicMaterial({color:'#ffffff', map: texture});
-	let cube = new THREE.Mesh(geometry, material);
-	(<any>cube).addBehaviors(
+	let cube = <Object3D & THREE.Mesh> new THREE.Mesh(geometry, material);
+	cube.addBehaviors(
 		altspace.utilities.behaviors.Object3DSync({
 			position : true,
 			scale : true,
 			rotation : true
 		}),
 		altspace.utilities.behaviors.Spin({speed: 0.0001}),
-		followPlayerBehaviour()
+		new FollowPlayerBehaviour()
 	);
 
 	sim.scene.add(cube);
@@ -138,58 +138,45 @@ function loadBomb(pos : THREE.Vector3)
 	});
 }
 
-function followPlayerBehaviour()
+class FollowPlayerBehaviour
 {
-	let object3d : Object3D;
-	let lastColor;
-	let colorRef;
+	object3d : Object3D;
+	lastColor : any;
+	colorRef : any;
 
-	let m_skeleton : TrackingSkeleton;
-	let m_enclosure : Enclosure;
+	skeleton : TrackingSkeleton;
+	enclosure : Enclosure;
 
-	function awake(o : Object3D) {
-		object3d = o;
-		let sync : Object3DSync = object3d.getBehaviorByType("Object3DSync");
+	awake(o : Object3D)
+	{
+		this.object3d = o;
+		let sync : Object3DSync = this.object3d.getBehaviorByType("Object3DSync");
 
-		colorRef = sync.dataRef.child('color');
-
-		colorRef.on('value', function (snapshot) {
-			let value = snapshot.val();
-			if (!value) return; //we are first to create the cube, no color set yet
-			(<THREE.MeshBasicMaterial>object3d.material).color = new THREE.Color(value);
-			object3d.material.needsUpdate = true;//currently required in Altspace
-		});
-
-		object3d.addEventListener('cursordown', function() {
-			let color = Please.make_color()[0];//random color
-			colorRef.set(color);
-		});
-
-		if (altspace && altspace.inClient) {
-			altspace.getEnclosure().then(function(e) {
+		if (altspace && altspace.inClient)
+		{
+			altspace.getEnclosure().then(e =>
+			{
 				// scale cube so it's 1 meter in Altspace
-				object3d.scale.multiplyScalar(e.pixelsPerMeter);
-				m_enclosure = e;
+				this.object3d.scale.multiplyScalar(e.pixelsPerMeter);
+				this.enclosure = e;
 			});
 
-			altspace.getThreeJSTrackingSkeleton().then(skeleton => m_skeleton = skeleton);
+			altspace.getThreeJSTrackingSkeleton().then(skeleton => this.skeleton = skeleton);
 		}
 	}
 
-	function update(deltaTime) {
-		if (m_skeleton)
+	update(deltaTime)
+	{
+		if (this.skeleton)
 		{
-			let target = m_skeleton.trackingJoints.CenterHead0.position.clone();
+			let target = this.skeleton.trackingJoints.CenterHead0.position.clone();
+			let toTarget = target.clone().sub(this.object3d.position);
 
-			let toTarget = target.clone().sub(object3d.position);
 			if (toTarget.length() > 5)
 			{
 				toTarget.clampLength(0, deltaTime * 0.01);
-				object3d.position.add(toTarget);
+				this.object3d.position.add(toTarget);
 			}
 		}
 	}
-
-	return { awake: awake, update: update };
-
-};
+}
