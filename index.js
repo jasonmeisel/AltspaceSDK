@@ -82,8 +82,9 @@ function createCube(args) {
     return cube;
 }
 function ready(firstInstance) {
-    console.log("ready! " + firstInstance);
-    altspace.getUser().then(function (user) { return sceneSync.instantiate('Cube', { user: user.userId }); });
+    if (firstInstance) {
+        altspace.getUser().then(function (user) { return sceneSync.instantiate('Cube', { user: user.userId }); });
+    }
     var fontSrc = "./Roboto_Regular.js";
     var fontLoader = new THREE.FontLoader();
     fontLoader.load(fontSrc, function (font) {

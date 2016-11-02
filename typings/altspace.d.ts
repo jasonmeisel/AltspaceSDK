@@ -1,3 +1,5 @@
+/// <reference path="firebase/firebase.d.ts" />
+
 declare class Enclosure {
 	innerWidth: number;
 	innerHeight: number;
@@ -89,7 +91,11 @@ declare class AltspaceUtilitiesBehaviors {
 	Drag: (t ?: any) => any;
 	GamepadControls: (t ?: any) => any;
 	HoverColor: (t ?: any) => any;
-	SceneSync: (t ?: any, e ?: any) => SceneSync;
+	SceneSync: (syncInstance : Firebase, config : {
+		instantiators ?: { [syncType : string] : (args ?: any) => Object3D };
+		destroyers ?: { [syncType : string] : (obj : Object3D) => boolean };
+		ready ?: (firstInstance : boolean) => void;
+	}) => SceneSync;
 	Spin: (t ?: any) => any;
 	TouchpadRotate: (t ?: any) => any;
 	Layout: (e ?: any) => any;
@@ -108,11 +114,7 @@ declare class SyncConnection {
 	app: SyncConnectionApp;
 	space: SyncConnectionSpace;
 	user: SyncConnectionUser;
-	instance: SyncConnectionInstance;
-}
-
-declare class SyncConnectionInstance {
-	path: string;
+	instance: Firebase;
 }
 
 declare class SyncConnectionUser {

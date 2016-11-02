@@ -70,7 +70,7 @@ let sim : Simulation;
 altspace.utilities.sync.connect(config).then(function(connection : SyncConnection) {
 	sim = altspace.utilities.Simulation();
 	sceneSync = altspace.utilities.behaviors.SceneSync(connection.instance, {
-		instantiators: {'Cube': createCube },
+		instantiators: { 'Cube': createCube },
 		ready: ready
 	});
 	sim.scene.addBehavior(sceneSync);
@@ -104,10 +104,11 @@ function createCube(args) {
 	return cube;
 }
 
-function ready(firstInstance) {
-	console.log(`ready! ${firstInstance}`);
-
-	altspace.getUser().then(user => sceneSync.instantiate('Cube', { user: user.userId }));
+function ready(firstInstance : boolean) {
+	if (firstInstance)
+	{
+		altspace.getUser().then(user => sceneSync.instantiate('Cube', { user: user.userId }));
+	}
 
 	let fontSrc = "./Roboto_Regular.js";
 	let fontLoader = new THREE.FontLoader();
