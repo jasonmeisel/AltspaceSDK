@@ -152,9 +152,6 @@ function loadBomb(pos : THREE.Vector3)
 class FollowPlayerBehaviour implements Behavior
 {
 	object3d : Object3D;
-	lastColor : any;
-	colorRef : any;
-
 	skeleton : TrackingSkeleton;
 	enclosure : Enclosure;
 

@@ -91,7 +91,7 @@ declare class AltspaceUtilitiesBehaviors {
 	Drag: (t ?: any) => any;
 	GamepadControls: (t ?: any) => any;
 	HoverColor: (t ?: any) => any;
-	SceneSync: (syncInstance : Firebase, config : {
+	SceneSync: (syncInstance : Firebase, config ?: {
 		instantiators ?: { [syncType : string] : (args ?: any) => Object3D };
 		destroyers ?: { [syncType : string] : (obj : Object3D) => boolean };
 		ready ?: (firstInstance : boolean) => void;
@@ -111,9 +111,9 @@ declare class AltspaceUtilitiesShims {
 declare var altspace : Altspace;
 
 declare class SyncConnection {
-	app: SyncConnectionApp;
-	space: SyncConnectionSpace;
-	user: SyncConnectionUser;
+	app: Firebase;
+	space: Firebase;
+	user: Firebase;
 	instance: Firebase;
 }
 
@@ -221,7 +221,7 @@ declare class TrackingJoint {
 declare class Object3D extends THREE.Object3D {
 	addBehavior: (behavior : Behavior) => any;
 	addBehaviors: (...behaviors: Behavior[]) => any;
-	getBehaviorByType: (t ?: any) => any;
+	getBehaviorByType: (t ?: any) => Behavior;
 	getMorphTargetIndexByName: (a ?: any) => any;
 	removeAllBehaviors: () => any;
 	removeBehavior: (t ?: any) => any;
@@ -237,16 +237,20 @@ declare class SceneSync {
 	instantiate: (syncType : string, initData ?: Object, destroyOnDisconnect ?: boolean) => any;
 	destroy: (object3d : Object) => any;
 	type: string;
+	autoSendRateMS : number;
+	clientId : string;
+	clientsRef : Firebase;
+	isMasterClient : boolean;
 }
 
 declare class Object3DSync {
-	awake: (t ?: any, e ?: any) => any;
-	update: (t ?: any) => any;
+	awake ?: (obj : Object3D) => void;
+	update ?: (dt : number) => void;
 	type: string;
 	link: (t ?: any, e ?: any) => any;
 	autoSend: () => any;
 	takeOwnership: () => any;
-	dataRef: any;
+	dataRef: Firebase;
 }
 
 declare interface Behavior {
